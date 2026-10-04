@@ -1,192 +1,57 @@
-# Super Mario 64
+# Super Mario 64 - Enhanced 3DS Port
 
-- This repo contains a full decompilation of Super Mario 64 of the following releases: Japan (jp), North America (us), Europe (eu), Shindou (sh) and iQue Player (cn).
-- Naming and documentation of the source code and data structures are in progress.
+A custom, high-performance port of Super Mario 64 for the Nintendo 3DS family of systems, focused on modern controls, a full 3D free camera, mod support, and broad optimization across all hardware revisions.
 
-It builds the following ROMs:
+---
 
-* sm64.jp.z64 `sha1: 8a20a5c83d6ceb0f0506cfc9fa20d8f438cafe51`
-* sm64.us.z64 `sha1: 9bef1128717f958171a4afac3ed78ee2bb4e86ce`
-* sm64.eu.z64 `sha1: 4ac5721683d0e0b6bbb561b58a71740845dceea9`
-* sm64.sh.z64 `sha1: 3f319ae697533a255a1003d09202379d78d5a2e0`
-* sm64.cn.z64 `sha1: 2e1db2780985a1f068077dc0444b685f39cd90ec`
+## Key Features
 
-This repo does not include all assets necessary for compiling the ROMs.
-A prior copy of the game is required to extract the assets.
+### Modernized Control Scheme
+Designed to fully utilize the New 3DS hardware, Circle Pad Pro, and original Old 3DS systems:
 
-## Quick Start (for Ubuntu)
+* **Movement:** C-Stick (Main analog stick).
+* **360° Free Camera Control:**
+  * **New 3DS / Circle Pad Pro:** C-Pad (Right analog stick).
+  * **Old 3DS / Old 2DS:** Touch Screen drag controls for full camera rotation.
+* **Remapped Buttons:**
+  * **B** -> Jump (Original A).
+  * **Y** -> Grab/ Attack (B).
+  * **R / L** -> Crouch / Z-Trigger.
+  * **ZL / ZR** -> L / R functions.
 
-1. Install prerequisites: `sudo apt install -y binutils-mips-linux-gnu build-essential git pkgconf python3`
-2. Clone the repo from within Linux: `git clone https://github.com/n64decomp/sm64.git`
-3. Place a Super Mario 64 ROM called `baserom.<VERSION>.z64` into the project folder for asset extraction, where `VERSION` can be `jp`, `us`, `eu`, `sh`, or `cn`.
-4. Run `make` to build. Specify the version through `make VERSION=<VERSION>`. Add `-j4` to improve build speed (hardware dependent).
+---
 
-Ensure the repo path length does not exceed 255 characters. Long path names result in build errors.
+## Free Camera Engine
+* Full 360-degree control using the C-Pad or Touch Screen, removing the original fixed Lakitu camera restrictions.
+* Improved camera collision handling to prevent clipping through walls and map geometry.
 
-## Installation
+---
 
-### Windows
+## Massive Optimization for Old 3DS
+(NOT TESTED) Built with the target of maintaining 60 FPS performance on original Old 3DS and Old 2DS hardware:
 
-Install WSL and a distro of your choice following
-[Windows Subsystem for Linux Installation Guide for Windows 10.](https://docs.microsoft.com/en-us/windows/wsl/install-win10)
-We recommend either Debian or Ubuntu 18.04 Linux distributions under WSL.
-Note: WSL1 does not currently support Ubuntu 20.04.
+* **Optimized Rendering Backend:** Direct conversion of Display Lists to Citro3D to minimize GPU overhead on the PICA200.
+* **Efficient VRAM Management:** Dynamic texture and geometry loading to keep memory usage minimal.
+* **New 3DS Enhancements:** Automatic unlock of the 804 MHz CPU clock, L2 cache enable, and multithreaded physics/loading offloaded to Core 1.
 
-Next, clone the SM64 repo from within the Linux shell:
-`git clone https://github.com/n64decomp/sm64.git`
+---
 
-Then continue following the directions in the [Linux](#linux) installation section below.
+## sm64coopdx Mod Support
+* Architecture structured for compatibility with scripts and assets from the sm64coopdx ecosystem.
+* Prepared for custom model integration, character skins, and extended features.
 
-### Linux
+---
 
-There are 3 steps to set up a working build.
+## Build Requirements
 
-#### Step 1: Install dependencies
+* **devkitPro** with `devkitARM`.
+* Libraries: `libctru`, `citro3d`, `citro2d`.
+* Original *Super Mario 64 (USA)* ROM in `.z64` format for asset extraction during the build process.
 
-The build system has the following package requirements:
- * binutils-mips
- * pkgconf
- * python3 >= 3.6
+---
 
-Dependency installation instructions for common Linux distros are provided below:
+## Credits & Acknowledgments
 
-##### Debian / Ubuntu
-To install build dependencies:
-```
-sudo apt install -y binutils-mips-linux-gnu build-essential git pkgconf python3
-```
-
-##### Arch Linux
-To install build dependencies:
-```
-sudo pacman -S base-devel python
-```
-Install the following AUR packages:
-* [mips64-elf-binutils](https://aur.archlinux.org/packages/mips64-elf-binutils) (AUR)
-
-##### Other Linux distributions
-
-Most modern Linux distributions should have equivalent packages to the other two listed above.
-You may have to use a different version of GNU binutils. Listed below are fully compatible binutils
-distributions with support in the makefile, and examples of distros that offer them:
-
-* `mips64-elf-` (Arch AUR)
-* `mips-linux-gnu-` (Ubuntu and other Debian-based distros)
-* `mips64-linux-gnu-` (RHEL/CentOS/Fedora)
-
-You may also use [Docker](#docker-installation) to handle installing an image with minimal dependencies.
-
-#### Step 2: Copy baserom(s) for asset extraction
-
-For each version (jp/us/eu/sh/cn) for which you want to build a ROM, put an existing ROM at
-`./baserom.<VERSION>.z64` for asset extraction.
-
-##### Step 3: Build the ROM
-
-Run `make` to build the ROM (defaults to `VERSION=us`).
-Other examples:
-```
-make VERSION=jp -j4       # build (J) version instead with 4 jobs
-make VERSION=eu COMPARE=0 # build (EU) version but do not compare ROM hashes
-```
-
-Resulting artifacts can be found in the `build` directory.
-
-The full list of configurable variables are listed below, with the default being the first listed:
-
-* ``VERSION``: ``jp``, ``us``, ``eu``, ``sh``, ``cn``
-* ``GRUCODE``: ``f3d_old``, ``f3d_new``, ``f3dex``, ``f3dex2``, ``f3dzex``
-* ``COMPARE``: ``1`` (compare ROM hash), ``0`` (do not compare ROM hash)
-* ``NON_MATCHING``: Use functionally equivalent C implementations for non-matchings. Also will avoid instances of undefined behavior.
-* ``CROSS``: Cross-compiler tool prefix (Example: ``mips64-elf-``).
-
-### macOS
-
-With macOS, you may either use Homebrew or [Docker](#docker-installation).
-
-#### Homebrew
-
-#### Step 1: Install dependencies
-Install [Homebrew](https://brew.sh) and the following dependencies:
-```
-brew update
-brew install coreutils make pkg-config tehzz/n64-dev/mips64-elf-binutils
-```
-
-#### Step 2: Copy baserom(s) for asset extraction
-
-For each version (jp/us/eu/sh/cn) for which you want to build a ROM, put an existing ROM at
-`./baserom.<VERSION>.z64` for asset extraction.
-
-##### Step 3: Build the ROM
-
-Use Homebrew's GNU make because the version included with macOS is too old.
-
-```
-gmake VERSION=jp -j4       # build (J) version instead with 4 jobs
-```
-
-### Docker Installation
-
-#### Create Docker image
-
-After installing and starting Docker, create the docker image. This only needs to be done once.
-```
-docker build -t sm64 .
-```
-
-#### Build
-
-To build, mount the local filesystem into the Docker container and build the ROM with `docker run sm64 make`.
-
-##### macOS example for (U):
-```
-docker run --rm --mount type=bind,source="$(pwd)",destination=/sm64 sm64 make VERSION=us -j4
-```
-
-##### Linux example for (U):
-For a Linux host, Docker needs to be instructed which user should own the output files:
-```
-docker run --rm --mount type=bind,source="$(pwd)",destination=/sm64 --user $UID:$GID sm64 make VERSION=us -j4
-```
-
-Resulting artifacts can be found in the `build` directory.
-
-## Project Structure
-
-	sm64
-	├── actors: object behaviors, geo layout, and display lists
-	├── asm: handwritten assembly code, rom header
-	│   └── non_matchings: asm for non-matching sections
-	├── assets: animation and demo data
-	│   ├── anims: animation data
-	│   └── demos: demo data
-	├── bin: C files for ordering display lists and textures
-	├── build: output directory
-	├── data: behavior scripts, misc. data
-	├── doxygen: documentation infrastructure
-	├── enhancements: example source modifications
-	├── include: header files
-	├── levels: level scripts, geo layout, and display lists
-	├── lib: SDK library code
-	├── rsp: audio and Fast3D RSP assembly code
-	├── sound: sequences, sound samples, and sound banks
-	├── src: C source code for game
-	│   ├── audio: audio code
-	│   ├── buffers: stacks, heaps, and task buffers
-	│   ├── engine: script processing engines and utils
-	│   ├── game: behaviors and rest of game source
-	│   ├── goddard: Mario intro screen
-	│   └── menu: title screen and file, act, and debug level selection menus
-	├── text: dialog, level names, act names
-	├── textures: skybox and generic texture data
-	└── tools: build tools
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to
-discuss what you would like to change.
-
-Run `clang-format` on your code to ensure it meets the project's coding standards.
-
-Official Discord: [discord.gg/DuYH3Fh](https://discord.gg/DuYH3Fh)
+* **n64decomp / sm64ex:** For the original source code decompilation and refactoring work.
+* **sm64coopdx Team:** For the mod engine foundation and extended features.
+* **3DS Homebrew Community:** For open-source tooling and libraries (`libctru` / `citro3d`).
